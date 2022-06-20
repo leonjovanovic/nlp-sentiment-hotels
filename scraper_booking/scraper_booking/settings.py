@@ -15,6 +15,7 @@ NEWSPIDER_MODULE = 'scraper_booking.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'scraper_booking (+http://www.yourdomain.com)'
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -50,9 +51,9 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-    'scraper_booking.middlewares.ScraperBookingDownloaderMiddleware': 543,
-}
+#DOWNLOADER_MIDDLEWARES = {
+#    'scraper_booking.middlewares.ScraperBookingDownloaderMiddleware': 543,
+#}
 
 REDIRECT_ENABLED = False
 
@@ -79,7 +80,7 @@ AUTOTHROTTLE_START_DELAY = 1
 # each remote server
 AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 # Enable showing throttling stats for every response received:
-AUTOTHROTTLE_DEBUG = True
+#AUTOTHROTTLE_DEBUG = True
 
 CONCURRENT_REQUESTS = 1
 
