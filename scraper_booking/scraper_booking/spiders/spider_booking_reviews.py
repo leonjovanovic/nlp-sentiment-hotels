@@ -19,9 +19,11 @@ class BookingReviewsSpider(scrapy.Spider):
     def __init__(self):
         self.driver = webdriver.Firefox()
         self.data = pd.DataFrame()
+        self.start_hotel = 2000
+        self.end_hotel = 3000
 
     def start_requests(self):
-        urls = pd.read_json(f'hotels_data_all_cities.json', orient='index')['link'].to_list()[1000:2000]
+        urls = pd.read_json(f'hotels_data_all_cities.json', orient='index')['link'].to_list()[self.start_hotel:self.end_hotel]
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse, cb_kwargs={'og_url': url,})
 
@@ -68,6 +70,6 @@ class BookingReviewsSpider(scrapy.Spider):
     def spider_closed(self, spider):
         spider.logger.info('Writing scraped DataFrame to JSON file')
         out = self.data.to_json(orient='index', indent=4, force_ascii=False)
-        with open(f'hotels_reviews_data_1000_2000.json', 'w', encoding='utf-8') as f:
+        with open(f'hotels_reviews_data_{self.start_hotel}_{self.end_hotel}.json', 'w', encoding='utf-8') as f:
             f.write(out)
         self.driver.close()
