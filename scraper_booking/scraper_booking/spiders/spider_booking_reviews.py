@@ -68,6 +68,7 @@ class BookingReviewsSpider(scrapy.Spider):
 
 
     def spider_closed(self, spider):
+        print('Writing scraped DataFrame to JSON file')
         spider.logger.info('Writing scraped DataFrame to JSON file')
         out = self.data.to_json(orient='index', indent=4, force_ascii=False)
         with open(f'hotels_reviews_data_{self.start_hotel}_{self.end_hotel}.json', 'w', encoding='utf-8') as f:
