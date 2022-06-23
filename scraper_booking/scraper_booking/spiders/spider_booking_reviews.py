@@ -19,8 +19,8 @@ class BookingReviewsSpider(scrapy.Spider):
     def __init__(self):
         self.driver = webdriver.Firefox()
         self.data = pd.DataFrame()
-        self.start_hotel = 5000
-        self.end_hotel = 6000
+        self.start_hotel = 6000
+        self.end_hotel = 7000
 
     def start_requests(self):
         urls = pd.read_json(f'hotels_data_all_cities.json', orient='index')['link'].to_list()[self.start_hotel:self.end_hotel]
