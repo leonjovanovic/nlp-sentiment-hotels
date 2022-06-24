@@ -4,13 +4,13 @@ import pandas as pd
 def save_progress(df):
     # save progress to file
     out = df.to_json(orient='index', indent=4, force_ascii=False)
-    with open(f'hotels_reviews_annotated_0_1000.json', 'w', encoding='utf-8') as f:
+    with open(f'data/annotated_reviews_lang_1.json', 'w', encoding='utf-8') as f:
         f.write(out)
 
 
 def start_annotate():
     # load reviews
-    df = pd.read_json(f'hotels_reviews_annotated_0_1000.json', orient='index')
+    df = pd.read_json(f'data/annotated_reviews_lang_1.json', orient='index')
     entities = ['price', 'location', 'cleanliness_room', 'staff']
 
     index = 0
