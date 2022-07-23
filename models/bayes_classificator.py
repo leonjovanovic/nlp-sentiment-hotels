@@ -1,13 +1,8 @@
 import pandas as pd
 import numpy as np
 from math import log
-import utils
-
-
-class ModelType:
-    CATEGORY = 0
-    SENTIMENT = 1
-    BOTH = 2
+from preprocess import prepare_dataset
+from utils import ModelType
 
 
 class NaiveBayes:
@@ -37,7 +32,7 @@ class NaiveBayes:
 
 
     def train(self, input_data, output_data):
-        df_train = self.prepare_dataset(input_data, output_data)
+        df_train = prepare_dataset(input_data, output_data, self.type)
         self.calc_probabilities_per_class(df_train)
 
 
@@ -52,22 +47,9 @@ class NaiveBayes:
 
     
     def test(self, input_data, output_data):
-        df_test = self.prepare_dataset(input_data, output_data)
+        df_test = prepare_dataset(input_data, output_data, self.type)
         df_test['prediction'] = pd.DataFrame(df_test.apply(lambda x: self.compute(x[0]), axis=1))
-        return df_test
-
-
-    def prepare_dataset(self, input_data, output_data):
-        input_data = pd.DataFrame(input_data)
-        if self.type == ModelType.CATEGORY:
-            return pd.concat([input_data, output_data.apply(lambda x: 1 if x == 2 else x)], axis=1)
-        elif self.type == ModelType.SENTIMENT:
-            data = pd.concat([input_data, output_data], axis=1)
-            data = data[data[data.columns[-1]] != 0]
-            data[data.columns[-1]] = data[data.columns[-1]].apply(lambda x: x - 1)
-            data.reset_index(drop=True, inplace=True)
-            return data
-        return pd.concat([input_data, output_data], axis=1)
+        return len(df_test[df_test['prediction'] != df_test[df_test.columns[-2]]])/len(df_test)
 
 
 class NaiveBayesCombined:
@@ -81,7 +63,8 @@ class NaiveBayesCombined:
 
     def test(self, input_data, output_data):
         prediction = pd.DataFrame(input_data).apply(lambda x: self.compute(x[0]), axis=1)
-        return pd.concat([input_data.rename('hotel_review'), output_data, prediction.rename('prediction')], axis=1)
+        df_test = pd.concat([input_data.rename('hotel_review'), output_data, prediction.rename('prediction')], axis=1)
+        return len(df_test[df_test['prediction'] != df_test[df_test.columns[-2]]])/len(df_test)
 
     def compute(self, review):
         if self.bayes_category.compute(review):
