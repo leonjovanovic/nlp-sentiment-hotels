@@ -3,12 +3,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
-
-
-class ModelType:
-    CATEGORY = 0
-    SENTIMENT = 1
-    BOTH = 2
+from torch import rand
 
 
 def import_annotated_json() -> pd.DataFrame:
@@ -56,10 +51,3 @@ def split_dataset(df: pd.DataFrame, train_percent = 0.8, validation_split = True
         validation_set.reset_index(drop=True, inplace=True)
     test_set.reset_index(drop=True, inplace=True)
     return train_set, validation_set, test_set
-
-
-def split_dataset_into_two(df: pd.DataFrame, train_percent = 0.9):
-    train_set, test_set = train_test_split(df, test_size=1-train_percent, shuffle=True, random_state=1)
-    train_set.reset_index(drop=True, inplace=True)
-    test_set.reset_index(drop=True, inplace=True)
-    return train_set, test_set
