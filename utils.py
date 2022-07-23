@@ -43,8 +43,8 @@ def tokenize(df):
     return vectorizer.get_feature_names_out()
 
 
-def shuffle_dataset(df: pd.DataFrame) -> pd.DataFrame:    
-    df = shuffle(df, random_state=0)
+def shuffle_dataset(df: pd.DataFrame, random_state=0) -> pd.DataFrame:
+    df = shuffle(df, random_state=random_state)
     df.reset_index(drop=True, inplace=True)
     return df
 
@@ -58,8 +58,16 @@ def split_dataset(df: pd.DataFrame, train_percent = 0.8, validation_split = True
     return train_set, validation_set, test_set
 
 
-def split_dataset_into_two(df: pd.DataFrame, train_percent = 0.9):
-    train_set, test_set = train_test_split(df, test_size=1-train_percent, shuffle=True, random_state=1)
-    train_set.reset_index(drop=True, inplace=True)
+def split_dataset_into_two(df: pd.DataFrame, test_val_index, k_fold=10):
+    df = shuffle_dataset(df)
+
+    slice_len = int(len(df)/k_fold)
+    test_set = df.iloc[test_val_index*slice_len:((test_val_index+1)*slice_len if test_val_index != k_fold-1 else len(df)), :]
     test_set.reset_index(drop=True, inplace=True)
+
+    train_set_1st = df.iloc[0:test_val_index*slice_len, :]
+    train_set_2nd = df.iloc[((test_val_index+1)*slice_len if test_val_index != k_fold-1 else len(df)): len(df), :]
+    train_set = pd.concat([train_set_1st, train_set_2nd])
+    train_set.reset_index(drop=True, inplace=True)
+
     return train_set, test_set
