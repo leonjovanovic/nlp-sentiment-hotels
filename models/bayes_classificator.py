@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from math import log
 from preprocess import prepare_dataset
-from utils import ModelType
+from utils import ModelType, tokenize
 
 
 class NaiveBayes:
@@ -53,6 +53,7 @@ class NaiveBayes:
 
     
     def test(self, input_data, output_data):
+        input_data = input_data.apply(lambda x: tokenize([x.hotel_review]), axis=1)
         df_test = prepare_dataset(input_data, output_data, self.type)
         df_test['prediction'] = pd.DataFrame(df_test.apply(lambda x: self.compute(x[0]), axis=1))
         return len(df_test[df_test['prediction'] != df_test[df_test.columns[-2]]])/len(df_test), \
@@ -69,6 +70,7 @@ class NaiveBayesCombined:
         self.bayes_sentiment.train(input_data, output_data)
 
     def test(self, input_data, output_data):
+        input_data = input_data.apply(lambda x: tokenize([x.hotel_review]), axis=1)
         prediction = pd.DataFrame(input_data).apply(lambda x: self.compute(x[0]), axis=1)
         df_test = pd.concat([input_data.rename('hotel_review'), output_data, prediction.rename('prediction')], axis=1)
         return len(df_test[df_test['prediction'] != df_test[df_test.columns[-2]]])/len(df_test), \

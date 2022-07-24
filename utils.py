@@ -32,7 +32,7 @@ def import_annotated_json() -> pd.DataFrame:
     return df
 
 
-def bag_of_words(df: pd.DataFrame, binary=False) -> pd.DataFrame:     
+def bag_of_words(df: pd.Series, binary=False) -> pd.DataFrame:
     vectorizer = CountVectorizer(binary=binary)
     return pd.DataFrame(vectorizer.fit_transform(df).toarray(), columns=vectorizer.get_feature_names_out())
 
