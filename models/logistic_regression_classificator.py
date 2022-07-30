@@ -34,6 +34,7 @@ class LogisticRegression:
         return H
 
     def regularization(self, function:str) -> float:
+        # Regularization
         if self.regularization_type == 'L1':
             if function == 'cost_function':
                 return self.reg_lambda * np.sum(abs(self.W)) / 2
