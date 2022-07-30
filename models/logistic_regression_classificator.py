@@ -33,15 +33,29 @@ class LogisticRegression:
             #H = np.exp(Z - c) / np.sum(np.exp(Z - c), axis=0) # num_of_classes x mini_batch_size
         return H
 
+    def regularization(self, function:str) -> float:
+        if self.regularization_type == 'L1':
+            if function == 'cost_function':
+                return self.reg_lambda * np.sum(abs(self.W)) / 2
+            elif function == 'derivative':
+                return self.reg_lambda * np.sign(self.W) / 2
+        elif self.regularization_type == 'L2':
+            if function == 'cost_function':
+                return self.reg_lambda * np.sum(self.W**2) / 2
+            elif function == 'derivative':
+                return self.reg_lambda * self.W
+        return 0    
+
+
     def calculate_cost_function(self, H, Y):
         if self.type != ModelType.BOTH:
             L = Y * np.log(H) + (1 - Y) * np.log(1 - H) # mini_batch_size x 1
-            J = -np.mean(L) # 1 x 1
+            J = -np.mean(L)# 1 x 1
         else:
             L = -np.log(H) # num_of_classes x mini_batch_size
             one_hot_Y = np.eye(self.k)[np.array(Y).reshape(-1)] # mini_batch_size x num_of_classes
-            J = np.mean(np.sum(one_hot_Y * L.transpose(), axis=1)) # 1 x 1
-        return J
+            J = np.mean(np.sum(one_hot_Y * L.transpose(), axis=1))# 1 x 1
+        return J + self.regularization('cost_function') / Y.shape[0]
 
     def compute(self, data):
         X, Y = self.split_data_input_output(data)
@@ -58,7 +72,7 @@ class LogisticRegression:
         else:
             one_hot_Y = np.eye(self.k)[np.array(Y).reshape(-1)] # mini_batch_size x num_of_classes
             dJ = -np.dot((one_hot_Y - H.transpose()).transpose(), X) / X.shape[0]  # num_of_classes x num_of_features + 1
-        self.W -= (learning_rate / X.shape[0]) * dJ
+        self.W -= (learning_rate / X.shape[0]) * (dJ  + self.regularization('derivative'))
 
     def train_mini_batch(self, data, mini_batch_index):
         mini_batch_data = data[mini_batch_index:mini_batch_index + mini_batch_size] # mini_batch_size x num_of_features + 1 (output)
