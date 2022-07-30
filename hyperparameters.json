@@ -1,0 +1,30 @@
+{
+    "logistic_regression": {
+      "category": {
+        "mini_batch_size": 32,
+        "num_of_iterations": 100,
+        "learning_rate": 0.01,
+        "regularization_type": "L2",
+        "lambda":   0.01
+      },
+      "sentiment": {
+        "mini_batch_size": 32,
+        "num_of_iterations": 100,
+        "learning_rate": 0.01,
+        "regularization_type": "L2",
+        "lambda":   0.01
+      },
+      "both": {
+        "mini_batch_size": 32,
+        "num_of_iterations": 100,
+        "learning_rate": 0.01,
+        "regularization_type": "L2",
+        "lambda":   0.01
+      }
+    },
+    "svm": {
+      "category": {"C": 2},
+      "sentiment": {"C": 2},
+      "both": {"C": 2}
+    }
+  }
