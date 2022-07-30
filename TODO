@@ -1,8 +1,7 @@
-Small:
-    hyperparameter format
 
 Big:
     Preprocessing: Frequency, stop words, stemming....
-    Regularization for LR and SVM
+    Combined LR
+    Regularization for SVM
     SVM
     Annotation

@@ -4,6 +4,7 @@ from preprocess import prepare_dataset
 from utils import ModelType
 from sklearn.feature_extraction.text import CountVectorizer
 import json
+import os
 
 
 class LogisticRegression:
@@ -21,10 +22,10 @@ class LogisticRegression:
         self.reg_lambda = hyperparameters['lambda']
 
     def _read_hyperparameters(self):
-        with open('../hyperparameters.json', 'r') as f:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'hyperparameters.json'), 'r') as f:
             data = json.load(f)
             hypers = data['logistic_regression']
-            return hypers[self.type.name.lower()]
+            return hypers[ModelType.map_value_to_string(self.type)]
             
 
     def split_data_input_output(self, data):

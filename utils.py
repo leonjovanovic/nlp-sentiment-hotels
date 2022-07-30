@@ -1,3 +1,4 @@
+import string
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
@@ -9,6 +10,17 @@ class ModelType:
     CATEGORY = 0
     SENTIMENT = 1
     BOTH = 2
+
+    @staticmethod
+    def map_value_to_string(value: int) -> str:
+        if value == 0:
+            return 'category'
+        elif value == 1:
+            return 'sentiment'
+        elif value == 2:
+            return 'both'
+        else:
+            raise Exception('Bad value for ModelType enum')
 
 
 def import_annotated_json() -> pd.DataFrame:
