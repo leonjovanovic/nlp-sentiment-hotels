@@ -3,18 +3,29 @@ import pandas as pd
 from preprocess import prepare_dataset
 from utils import ModelType
 from sklearn.feature_extraction.text import CountVectorizer
-
-mini_batch_size = 32
-num_of_iterations = 100
-learning_rate = 0.01
+import json
 
 
 class LogisticRegression:
-    def __init__(self, type: ModelType) -> None:
+    def __init__(self, type: ModelType, hyperparameters=None) -> None:
         self.W = None
         self.features_mapping = None
         self.type = type
         self.k = 3 if self.type == ModelType.BOTH else 1
+        if not hyperparameters:
+            hyperparameters = self._read_hyperparameters()
+        self.mini_batch_size = hyperparameters['mini_batch_size']
+        self.num_of_iterations = hyperparameters['num_of_iterations']
+        self.learning_rate = hyperparameters['learning_rate']
+        self.regularization_type = hyperparameters['regularization_type']
+        self.reg_lambda = hyperparameters['lambda']
+
+    def _read_hyperparameters(self):
+        with open('../hyperparameters.json', 'r') as f:
+            data = json.load(f)
+            hypers = data['logistic_regression']
+            return hypers[self.type.name.lower()]
+            
 
     def split_data_input_output(self, data):
         return data[:, :-1], data[:, -1] # mini_batch_size x num_of_features, mini_batch_size x 1
@@ -72,10 +83,10 @@ class LogisticRegression:
         else:
             one_hot_Y = np.eye(self.k)[np.array(Y).reshape(-1)] # mini_batch_size x num_of_classes
             dJ = -np.dot((one_hot_Y - H.transpose()).transpose(), X) / X.shape[0]  # num_of_classes x num_of_features + 1
-        self.W -= (learning_rate / X.shape[0]) * (dJ  + self.regularization('derivative'))
+        self.W -= (self.learning_rate / X.shape[0]) * (dJ  + self.regularization('derivative'))
 
     def train_mini_batch(self, data, mini_batch_index):
-        mini_batch_data = data[mini_batch_index:mini_batch_index + mini_batch_size] # mini_batch_size x num_of_features + 1 (output)
+        mini_batch_data = data[mini_batch_index:mini_batch_index + self.mini_batch_size] # mini_batch_size x num_of_features + 1 (output)
         X, Y, H, J = self.compute(mini_batch_data)
         self.update_parameters(X, Y, H)
         return J
@@ -90,8 +101,8 @@ class LogisticRegression:
             self.features_mapping[feature] = ind
         train_dataset = prepare_dataset(train_input_data, train_output_data, self.type).to_numpy()
 
-        for iteration in range(num_of_iterations):        
-            for mini_batch_index in range(0, train_dataset.shape[0], mini_batch_size):
+        for iteration in range(self.num_of_iterations):        
+            for mini_batch_index in range(0, train_dataset.shape[0], self.mini_batch_size):
                 J_train = self.train_mini_batch(train_dataset, mini_batch_index)
                 J_validation, accuracy_val = self.test(validation_input_data, validation_output_data)
             #print(f'        It{iteration}: J_train = {J_train}, J_val = {J_validation}, Acc_val = {accuracy_val}')
