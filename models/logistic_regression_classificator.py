@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from preprocess import prepare_dataset
 from utils import ModelType
 from sklearn.feature_extraction.text import CountVectorizer
@@ -20,18 +21,21 @@ class LogisticRegression:
 
     def calculate_hypothesis(self, X):
         # Multiplying parameters with input features which need to be transposed for vector multiplication to work
-        Z = np.dot(self.W, X.transpose()) # 1 x mini_batch_size
+        Z = np.dot(self.W, X.transpose()) # num_of_classes x mini_batch_size
         if self.type != ModelType.BOTH:
             # Applying Sigmoid function to get hypotesis h(x) = 1 / (1 + e^-(w0*1 + w1*x1 + w2*x2 + ... + wn*xn)) = 1 / (1 + e^-W*X^T) = 1 / (1 + e^-Z) = H
             H = 1 / (1 + np.exp(-Z)) # 1 x mini_batch_size
         else:
             # Applying Softmax function to get hypotesis h(x) = 1 / sum(e^Wk*X^T) * [e^W1*X^T, e^W2*X^T, ...] = 1 / sum(Z) * Z = H
-            H = 1 / np.sum(Z, axis=0) * Z # num_of_classes x mini_batch_size
+            H = (1 / np.sum(np.exp(Z), axis=0)) * np.exp(Z) # num_of_classes x mini_batch_size
+            # https://www.youtube.com/watch?v=pZbkVup7fYE
+            #c = np.max(Z, axis=0) # 1 x mini_batch_size
+            #H = np.exp(Z - c) / np.sum(np.exp(Z - c), axis=0) # num_of_classes x mini_batch_size
         return H
 
     def calculate_cost_function(self, H, Y):
         if self.type != ModelType.BOTH:
-            L = -Y * np.log(H) - (1 - Y) * np.log(1 - H) # mini_batch_size x 1
+            L = Y * np.log(H) + (1 - Y) * np.log(1 - H) # mini_batch_size x 1
             J = -np.mean(L) # 1 x 1
         else:
             L = -np.log(H) # num_of_classes x mini_batch_size
@@ -50,10 +54,10 @@ class LogisticRegression:
 
     def update_parameters(self, X, Y, H):
         if self.type != ModelType.BOTH:
-            dJ = np.dot((H - Y).transpose(), X)  # 1 x num_of_features + 1
+            dJ = np.dot((H - Y), X)  # 1 x num_of_features + 1
         else:
             one_hot_Y = np.eye(self.k)[np.array(Y).reshape(-1)] # mini_batch_size x num_of_classes
-            dJ = np.dot((one_hot_Y - H.transpose()).transpose(), X)  # num_of_classes x num_of_features + 1
+            dJ = -np.dot((one_hot_Y - H.transpose()).transpose(), X) / X.shape[0]  # num_of_classes x num_of_features + 1
         self.W -= (learning_rate / X.shape[0]) * dJ
 
     def train_mini_batch(self, data, mini_batch_index):
@@ -62,7 +66,7 @@ class LogisticRegression:
         self.update_parameters(X, Y, H)
         return J
 
-    def train(self, train_input_data, train_output_data, validation_input_data=None, validation_output_data=None):
+    def train(self, train_input_data, train_output_data, validation_input_data, validation_output_data):
         if self.type == ModelType.BOTH:
             self.W = np.random.uniform(0.0, 1.0, (self.k, len(train_input_data.columns) + 1)) # Weights for Logistic regression 1 x num_of_features + 1 for bias term
         else:
@@ -72,23 +76,22 @@ class LogisticRegression:
             self.features_mapping[feature] = ind
         train_dataset = prepare_dataset(train_input_data, train_output_data, self.type).to_numpy()
 
-        validation_dataset = prepare_dataset(validation_input_data, validation_output_data, self.type).to_numpy() if validation_input_data else None
-
         for iteration in range(num_of_iterations):        
             for mini_batch_index in range(0, train_dataset.shape[0], mini_batch_size):
                 J_train = self.train_mini_batch(train_dataset, mini_batch_index)
-                if validation_dataset:
-                    _, _, H_validation, J_validation = self.compute(validation_dataset)
+                J_validation, accuracy_val = self.test(validation_input_data, validation_output_data)
+            #print(f'        It{iteration}: J_train = {J_train}, J_val = {J_validation}, Acc_val = {accuracy_val}')
 
     def test(self, input_data, output_data):
-        # input - 1 column where each row is tokenized sentence
-        # output - 1 column with 0, 1 or 2
         vectorizer = CountVectorizer(vocabulary=self.features_mapping)
-        X = vectorizer.transform(input_data.hotel_review).toarray()
-        Y = output_data.to_numpy()
-        data = np.hstack((X, Y))
-        X, Y, H, J = self.compute(data)
-        J = np.mean(J)
+        input_data = pd.DataFrame(vectorizer.transform(input_data.hotel_review).toarray(), columns=vectorizer.get_feature_names_out())
+        data = prepare_dataset(input_data, output_data, self.type).to_numpy()
+        _, Y, H, J = self.compute(data)
+        if self.k > 1:
+            H = H.argmax(axis=0) # Number of class which has highest probability (1 x batch_size)
+        else:
+            H[H>=0.5] = 1
+            H[H<0.5] = 0
         accuracy = (np.count_nonzero(H == Y)) / Y.shape[0]
         return J, accuracy
 

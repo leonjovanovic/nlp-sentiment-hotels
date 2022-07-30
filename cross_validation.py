@@ -11,7 +11,7 @@ def cross_validation(input_data, output_data, model):
         train_input, test_or_val_input = split_dataset_into_two(input_data, i, k_fold)
         train_output, test_or_val_output = split_dataset_into_two(output_data, i, k_fold)
         train_input = bag_of_words(train_input.hotel_review)
-        model.train(train_input, train_output)
+        model.train(train_input, train_output, test_or_val_input, test_or_val_output)
         J, accuracy = model.test(test_or_val_input, test_or_val_output)
         J_values.append(J)
         Accuracy_values.append(accuracy)

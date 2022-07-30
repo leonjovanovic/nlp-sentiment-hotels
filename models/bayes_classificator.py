@@ -36,9 +36,9 @@ class NaiveBayes:
         self.classes_probabilities = []
 
 
-    def train(self, input_data, output_data):
+    def train(self, train_input_data, train_output_data, test_input_data=None, test_output_data=None):
         self.reset_model()
-        df_train = prepare_dataset(input_data, output_data, self.type)
+        df_train = prepare_dataset(train_input_data, train_output_data, self.type)
         self.calc_probabilities_per_class(df_train)
 
 
@@ -65,9 +65,9 @@ class NaiveBayesCombined:
         self.bayes_category = NaiveBayes(ModelType.CATEGORY)
         self.bayes_sentiment = NaiveBayes(ModelType.SENTIMENT)
 
-    def train(self, input_data, output_data):
-        self.bayes_category.train(input_data, output_data)
-        self.bayes_sentiment.train(input_data, output_data)
+    def train(self, train_input_data, train_output_data, test_input_data=None, test_output_data=None):
+        self.bayes_category.train(train_input_data, train_output_data)
+        self.bayes_sentiment.train(train_input_data, train_output_data)
 
     def test(self, input_data, output_data):
         input_data = input_data.apply(lambda x: tokenize([x.hotel_review]), axis=1)

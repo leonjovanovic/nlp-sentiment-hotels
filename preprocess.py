@@ -11,10 +11,10 @@ def preprocess(train_split_ratio=0.8, validation_split=True):
     return df_train, df_val, df_test, train_input, val_input, test_input
 
 
-def prepare_dataset(input_data, output_data, type):
-    if type == ModelType.CATEGORY:
+def prepare_dataset(input_data, output_data, model_type):
+    if model_type == ModelType.CATEGORY:
         return pd.concat([input_data, output_data.apply(lambda x: 1 if x[0] == 2 else x[0], axis=1)], axis=1)
-    elif type == ModelType.SENTIMENT:
+    elif model_type == ModelType.SENTIMENT:
         data = pd.concat([input_data, output_data], axis=1)
         data = data[data[data.columns[-1]] != 0]
         data[data.columns[-1]] = data[data.columns[-1]].apply(lambda x: x - 1)
