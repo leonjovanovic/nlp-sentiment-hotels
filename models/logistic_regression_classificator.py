@@ -121,4 +121,43 @@ class LogisticRegression:
             H[H<0.5] = 0
         accuracy = (np.count_nonzero(H == Y)) / Y.shape[0]
         return J, accuracy
+    
+    def predict(self, review):
+        vectorizer = CountVectorizer(vocabulary=self.features_mapping)
+        X = pd.DataFrame(vectorizer.transform(review).toarray(), columns=vectorizer.get_feature_names_out())
+        # Adding ones as first element in every row for future multiplication with w0 (bias term)
+        ones_bias_term = np.ones([X.shape[0], 1])
+        X = np.hstack((ones_bias_term, X)) # mini_batch_size x 1(one) + num_of_features
+        H = self.calculate_hypothesis(X)
+        if self.k > 1:
+            H = H.argmax(axis=0) # Number of class which has highest probability (1 x batch_size)
+        else:
+            H[H>=0.5] = 1
+            H[H<0.5] = 0
+        return H
+
+
+class LogisticRegressionCombined:
+    def __init__(self):
+        # should hyperparameters be passed to the constructor or should it use the best hyperparams found for each model?
+        self.regression_category = LogisticRegression(ModelType.CATEGORY)
+        self.regression_sentiment = LogisticRegression(ModelType.SENTIMENT)
+        pass
+
+    def train(self, train_input_data, train_output_data, validation_input_data, validation_output_data):
+        self.regression_category.train(train_input_data, train_output_data, validation_input_data, validation_output_data)
+        self.regression_sentiment.train(train_input_data, train_output_data, validation_input_data, validation_output_data)
+    
+    def test(self, input_data, output_data):
+        input_data = pd.DataFrame(input_data)
+        prediction = input_data.apply(lambda x: self.compute(x), axis=1)
+        df_test = pd.concat([input_data, output_data, prediction.rename('prediction')], axis=1)
+        return len(df_test[df_test['prediction'] != df_test[df_test.columns[-2]]])/len(df_test), \
+               len(df_test[df_test['prediction'] == df_test[df_test.columns[-2]]])/len(df_test)*100.0
+
+    def compute(self, review):
+        if self.regression_category.predict(review):
+            return self.regression_sentiment.predict(review) + 1
+        else:
+            return 0
 
