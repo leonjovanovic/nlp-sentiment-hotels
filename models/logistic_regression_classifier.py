@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from preprocess import prepare_dataset
-from utils import ModelType
+from utils import ModelType, read_hyperparameters
 from sklearn.feature_extraction.text import CountVectorizer
 import json
 import os
@@ -14,26 +14,19 @@ class LogisticRegression:
         self.type = type
         self.k = 3 if self.type == ModelType.BOTH else 1
         if not hyperparameters:
-            hyperparameters = self._read_hyperparameters()
+            hyperparameters = read_hyperparameters('logistic_regression', self.type)
         self.mini_batch_size = hyperparameters['mini_batch_size']
         self.num_of_iterations = hyperparameters['num_of_iterations']
         self.learning_rate = hyperparameters['learning_rate']
         self.regularization_type = hyperparameters['regularization_type']
-        self.reg_lambda = hyperparameters['lambda']
-
-    def _read_hyperparameters(self):
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'hyperparameters.json'), 'r') as f:
-            data = json.load(f)
-            hypers = data['logistic_regression']
-            return hypers[ModelType.map_value_to_string(self.type)]
-            
+        self.reg_lambda = hyperparameters['lambda']            
 
     def split_data_input_output(self, data):
         return data[:, :-1], data[:, -1] # mini_batch_size x num_of_features, mini_batch_size x 1
 
     def calculate_hypothesis(self, X):
         # Multiplying parameters with input features which need to be transposed for vector multiplication to work
-        Z = np.dot(self.W, X.transpose()) # num_of_classes x mini_batch_size
+        Z = np.dot(self.W, X.transpose()) # num_of_classes (1 in binary case) x mini_batch_size
         if self.type != ModelType.BOTH:
             # Applying Sigmoid function to get hypotesis h(x) = 1 / (1 + e^-(w0*1 + w1*x1 + w2*x2 + ... + wn*xn)) = 1 / (1 + e^-W*X^T) = 1 / (1 + e^-Z) = H
             H = 1 / (1 + np.exp(-Z)) # 1 x mini_batch_size
@@ -58,7 +51,6 @@ class LogisticRegression:
             elif function == 'derivative':
                 return self.reg_lambda * self.W
         return 0    
-
 
     def calculate_cost_function(self, H, Y):
         if self.type != ModelType.BOTH:
@@ -142,7 +134,6 @@ class LogisticRegressionCombined:
         # should hyperparameters be passed to the constructor or should it use the best hyperparams found for each model?
         self.regression_category = LogisticRegression(ModelType.CATEGORY)
         self.regression_sentiment = LogisticRegression(ModelType.SENTIMENT)
-        pass
 
     def train(self, train_input_data, train_output_data, validation_input_data, validation_output_data):
         self.regression_category.train(train_input_data, train_output_data, validation_input_data, validation_output_data)

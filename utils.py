@@ -1,3 +1,4 @@
+import json
 import string
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
@@ -83,3 +84,10 @@ def split_dataset_into_two(df: pd.DataFrame, test_val_index, k_fold=10):
     train_set.reset_index(drop=True, inplace=True)
 
     return train_set, test_set
+
+
+def read_hyperparameters(name, type):
+    with open('hyperparameters.json', 'r') as f:
+        data = json.load(f)
+        hypers = data[name]
+        return hypers[ModelType.map_value_to_string(type)]

@@ -2,6 +2,6 @@
 Big:
     Preprocessing: Frequency, stop words, stemming....
     Combined LR
-    Regularization for SVM
     SVM
+    Regularization for SVM
     Annotation
