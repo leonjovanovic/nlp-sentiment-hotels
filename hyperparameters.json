@@ -26,18 +26,21 @@
       "category": {
         "mini_batch_size": 32,
         "num_of_iterations": 100,
+        "learning_rate": 0.01,
         "cost_function_type": "L2",
         "C": 2
       },
       "sentiment": {
         "mini_batch_size": 32,
         "num_of_iterations": 100,
+        "learning_rate": 0.01,
         "cost_function_type": "L2",
         "C": 2
       },
       "both": {
         "mini_batch_size": 32,
         "num_of_iterations": 100,
+        "learning_rate": 0.01,
         "cost_function_type": "L2",
         "C": 2
       }

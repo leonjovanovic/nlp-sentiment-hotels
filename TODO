@@ -1,7 +1,8 @@
-
+Small:
+    SVM Both
+    Regularization for SVM
+    Check SVM Combined
+    What to do with map 0 - 1 to -1 - 1 svm
 Big:
     Preprocessing: Frequency, stop words, stemming....
-    Combined LR
-    SVM
-    Regularization for SVM
     Annotation

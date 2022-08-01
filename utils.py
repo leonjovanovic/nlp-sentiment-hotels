@@ -86,8 +86,8 @@ def split_dataset_into_two(df: pd.DataFrame, test_val_index, k_fold=10):
     return train_set, test_set
 
 
-def read_hyperparameters(name, type):
+def read_hyperparameters(model_name, type):
     with open('hyperparameters.json', 'r') as f:
         data = json.load(f)
-        hypers = data[name]
+        hypers = data[model_name]
         return hypers[ModelType.map_value_to_string(type)]
