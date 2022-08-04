@@ -1,15 +1,29 @@
 import pandas as pd
-from utils import ModelType, import_annotated_json, split_dataset, bag_of_words, tokenize
-import json
+from utils import ModelType, PreprocessType, import_annotated_json, split_dataset, bag_of_words, split_into_words
 
 
-def preprocess(train_split_ratio=0.8, validation_split=True):
-    df = import_annotated_json()
-    df_train, df_val, df_test = split_dataset(df, train_split_ratio, validation_split)
-    train_input = bag_of_words(df_train.hotel_review)
-    val_input = None
-    test_input = df_test.apply(lambda x: tokenize([x.hotel_review]), axis=1)
-    return df_train, df_val, df_test, train_input, val_input, test_input
+def preprocess(train_input: pd.Series, test_or_val_input: pd.Series, preprocess_type: int, is_bayes: bool):
+    if preprocess_type == PreprocessType.BAG_OF_WORDS:
+        train_input, vocabulary = bag_of_words(train_input)
+        if is_bayes:
+            test_or_val_input = pd.DataFrame(test_or_val_input.apply(lambda x: split_into_words(x)))
+        else:
+            test_or_val_input, _ = bag_of_words(test_or_val_input, vocabulary)
+    elif preprocess_type == PreprocessType.BAG_OF_WORDS_BINARY:
+        a = 1
+    elif preprocess_type == PreprocessType.TF:
+        a = 1
+    elif preprocess_type == PreprocessType.IDF:
+        a = 1
+    elif preprocess_type == PreprocessType.TF_IDF:
+        a = 1
+    elif preprocess_type == PreprocessType.BIGRAM:
+        a = 1
+    elif preprocess_type == PreprocessType.TRIGRAM:
+        a = 1
+    else: 
+        raise Exception("Wrong preprocess type!")
+    return train_input, test_or_val_input
 
 
 def prepare_dataset(input_data, output_data, model_type):

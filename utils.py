@@ -33,6 +33,15 @@ class ModelType:
             raise Exception('Bad value for ModelType enum')
 
 
+class PreprocessType:
+    BAG_OF_WORDS = 0
+    BAG_OF_WORDS_BINARY = 1
+    TF = 2
+    IDF = 3
+    TF_IDF = 4
+    BIGRAM = 5
+    TRIGRAM = 6
+
 def import_annotated_json() -> pd.DataFrame:
     df1 = pd.read_json(f'data/annotated_reviews_lang_1.json', orient='index')
     df2 = pd.read_json(f'data/annotated_reviews_lang_2.json', orient='index')
@@ -54,15 +63,20 @@ def import_annotated_json() -> pd.DataFrame:
     return df
 
 
-def bag_of_words(df: pd.Series, binary=False) -> pd.DataFrame:
-    vectorizer = CountVectorizer(binary=binary)
-    return pd.DataFrame(vectorizer.fit_transform(df).toarray(), columns=vectorizer.get_feature_names_out())
+def bag_of_words(df: pd.Series, vocabulary=None, binary=False) -> pd.DataFrame:
+    vectorizer = CountVectorizer(vocabulary=vocabulary, binary=binary)
+    if vocabulary is None:
+        return pd.DataFrame(vectorizer.fit_transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vectorizer.vocabulary_
+    else:
+        return pd.DataFrame(vectorizer.transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vocabulary
 
-
-def tokenize(df):
+def split_into_words(sentence):
     vectorizer = CountVectorizer()
-    vectorizer.fit(df)
-    return vectorizer.get_feature_names_out()
+    occurences = vectorizer.fit_transform([sentence]).toarray()
+    result = []
+    for word, num_of_occ in zip(vectorizer.get_feature_names_out(), occurences[0]):
+        result += [word] * num_of_occ
+    return result
 
 
 def shuffle_dataset(df: pd.DataFrame, random_state=0) -> pd.DataFrame:

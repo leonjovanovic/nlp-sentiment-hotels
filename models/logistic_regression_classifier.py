@@ -12,7 +12,6 @@ class LogisticRegression:
         if type > ModelType.BOTH:
             raise Exception('Bad value for ModelType enum')
         self.W = None
-        self.features_mapping = None
         self.type = type
         self.k = 3 if self.type == ModelType.BOTH else 1
         if not hyperparameters:
@@ -62,7 +61,7 @@ class LogisticRegression:
             L = -np.log(H) # num_of_classes x mini_batch_size
             one_hot_Y = np.eye(self.k)[np.array(Y).reshape(-1)] # mini_batch_size x num_of_classes
             J = np.mean(np.sum(one_hot_Y * L.transpose(), axis=1))# 1 x 1
-        return J + self.regularization('cost_function') / Y.shape[0]
+        return J + self.regularization('cost_function')
 
     def compute(self, data):
         X, Y = self.split_data_input_output(data)
@@ -89,23 +88,19 @@ class LogisticRegression:
 
     def train(self, train_input_data, train_output_data, validation_input_data, validation_output_data):
         if self.type == ModelType.BOTH:
+            np.random.seed(0)
             self.W = np.random.uniform(0.0, 1.0, (self.k, len(train_input_data.columns) + 1)) # Weights for Logistic regression 1 x num_of_features + 1 for bias term
         else:
             self.W = np.zeros([self.k, len(train_input_data.columns) + 1])
-        self.features_mapping = {}
-        for ind, feature in enumerate(list(train_input_data.columns)):
-            self.features_mapping[feature] = ind
         train_dataset = prepare_dataset(train_input_data, train_output_data, self.type).to_numpy()
 
         for iteration in range(self.num_of_iterations):        
             for mini_batch_index in range(0, train_dataset.shape[0], self.mini_batch_size):
                 J_train = self.train_mini_batch(train_dataset, mini_batch_index)
                 J_validation, accuracy_val = self.test(validation_input_data, validation_output_data)
-            #print(f'        It{iteration}: J_train = {J_train}, J_val = {J_validation}, Acc_val = {accuracy_val}')
+            print(f'        It{iteration}: J_train = {J_train}, J_val = {J_validation}, Acc_val = {accuracy_val}')
 
     def test(self, input_data, output_data):
-        vectorizer = CountVectorizer(vocabulary=self.features_mapping)
-        input_data = pd.DataFrame(vectorizer.transform(input_data.hotel_review).toarray(), columns=vectorizer.get_feature_names_out())
         data = prepare_dataset(input_data, output_data, self.type).to_numpy()
         _, Y, H, J = self.compute(data)
         if self.k > 1:
@@ -116,9 +111,7 @@ class LogisticRegression:
         accuracy = (np.count_nonzero(H == Y)) / Y.shape[0]
         return J, accuracy
     
-    def predict(self, review):
-        vectorizer = CountVectorizer(vocabulary=self.features_mapping)
-        X = pd.DataFrame(vectorizer.transform(review).toarray(), columns=vectorizer.get_feature_names_out())
+    def predict(self, X):
         # Adding ones as first element in every row for future multiplication with w0 (bias term)
         ones_bias_term = np.ones([X.shape[0], 1])
         X = np.hstack((ones_bias_term, X)) # mini_batch_size x 1(one) + num_of_features
@@ -133,7 +126,6 @@ class LogisticRegression:
 
 class LogisticRegressionCombined:
     def __init__(self):
-        # should hyperparameters be passed to the constructor or should it use the best hyperparams found for each model?
         self.regression_category = LogisticRegression(ModelType.CATEGORY)
         self.regression_sentiment = LogisticRegression(ModelType.SENTIMENT)
 
@@ -142,11 +134,10 @@ class LogisticRegressionCombined:
         self.regression_sentiment.train(train_input_data, train_output_data, validation_input_data, validation_output_data)
     
     def test(self, input_data, output_data):
-        input_data = pd.DataFrame(input_data)
-        prediction = input_data.apply(lambda x: self.compute(x), axis=1)
-        df_test = pd.concat([input_data, output_data, prediction.rename('prediction')], axis=1)
-        return len(df_test[df_test['prediction'] != df_test[df_test.columns[-2]]])/len(df_test), \
-               len(df_test[df_test['prediction'] == df_test[df_test.columns[-2]]])/len(df_test)*100.0
+        prediction = input_data.apply(lambda x: self.compute(pd.DataFrame(x).transpose()), axis=1)
+        df_test = pd.concat([output_data, prediction], axis=1)
+        return len(df_test[df_test[df_test.columns[-1]] != df_test[df_test.columns[-2]]])/len(df_test), \
+               len(df_test[df_test[df_test.columns[-1]] == df_test[df_test.columns[-2]]])/len(df_test)*100.0
 
     def compute(self, review):
         if self.regression_category.predict(review):

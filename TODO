@@ -1,3 +1,5 @@
+Small:
+    SVM One vs rest, should we have 3 hyperparameter or 1
 Big:
     Preprocessing: Frequency, stop words, stemming....
     Annotation
