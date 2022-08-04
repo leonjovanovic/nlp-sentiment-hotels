@@ -1,5 +1,6 @@
 import pandas as pd
 from utils import ModelType, import_annotated_json, split_dataset, bag_of_words, tokenize
+import json
 
 
 def preprocess(train_split_ratio=0.8, validation_split=True):
@@ -26,3 +27,28 @@ def prepare_dataset(input_data, output_data, model_type):
         return pd.concat([input_data, output_data.apply(lambda x: 0 if x[0] == 1 else 1, axis=1)], axis=1)
     elif model_type == ModelType.SVM_TWO:
         return pd.concat([input_data, output_data.apply(lambda x: 0 if x[0] == 2 else 1, axis=1)], axis=1)
+
+
+def initial_preprocess(series:pd.Series, lowercasing=True, frequency_filtering=False, stop_words_filtering=False):
+    if lowercasing:
+        series = lowercase(series)
+    if frequency_filtering:
+        series = filter_frequent(series)
+    if stop_words_filtering:
+        series = filter_stop_words(series)
+    return series
+
+
+def lowercase(series):
+    series.apply(lambda review : review.lower(), axis=1)
+    return series
+
+
+def filter_frequent(series):
+    # TODO
+    pass
+
+
+def filter_stop_words(series):
+    # TODO
+    pass
