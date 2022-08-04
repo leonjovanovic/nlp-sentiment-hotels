@@ -7,6 +7,8 @@ from utils import ModelType, tokenize
 
 class NaiveBayes:
     def __init__(self, type: int) -> None:
+        if type > ModelType.BOTH:
+            raise Exception('Bad value for ModelType enum')
         self.type = type
         self.num_classes = 2 if type < ModelType.BOTH else 3
         self.word_in_classes_probabilities = []

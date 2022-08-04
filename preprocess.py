@@ -12,7 +12,7 @@ def preprocess(train_split_ratio=0.8, validation_split=True):
 
 
 def prepare_dataset(input_data, output_data, model_type):
-    if model_type == ModelType.CATEGORY:
+    if model_type == ModelType.CATEGORY or model_type == ModelType.SVM_ZERO:
         return pd.concat([input_data, output_data.apply(lambda x: 1 if x[0] == 2 else x[0], axis=1)], axis=1)
     elif model_type == ModelType.SENTIMENT:
         data = pd.concat([input_data, output_data], axis=1)
@@ -20,4 +20,9 @@ def prepare_dataset(input_data, output_data, model_type):
         data[data.columns[-1]] = data[data.columns[-1]].apply(lambda x: x - 1)
         data.reset_index(drop=True, inplace=True)
         return data
-    return pd.concat([input_data, output_data], axis=1)
+    elif model_type == ModelType.BOTH:
+        return pd.concat([input_data, output_data], axis=1)
+    elif model_type == ModelType.SVM_ONE:
+        return pd.concat([input_data, output_data.apply(lambda x: 0 if x[0] == 1 else 1, axis=1)], axis=1)
+    elif model_type == ModelType.SVM_TWO:
+        return pd.concat([input_data, output_data.apply(lambda x: 0 if x[0] == 2 else 1, axis=1)], axis=1)

@@ -11,6 +11,9 @@ class ModelType:
     CATEGORY = 0
     SENTIMENT = 1
     BOTH = 2
+    SVM_ZERO = 3
+    SVM_ONE = 4
+    SVM_TWO = 5
 
     @staticmethod
     def map_value_to_string(value: int) -> str:
@@ -20,6 +23,12 @@ class ModelType:
             return 'sentiment'
         elif value == 2:
             return 'both'
+        elif value == 3:
+            return 'multi_svm_zero'
+        elif value == 4:
+            return 'multi_svm_one'
+        elif value == 5:
+            return 'multi_svm_two'
         else:
             raise Exception('Bad value for ModelType enum')
 

@@ -1,5 +1,6 @@
 
 
+from ast import Mod
 from matplotlib.pyplot import cla
 import numpy as np
 import pandas as pd
@@ -15,12 +16,12 @@ class SupportVectorMachine:
         self.W = None
         self.features_mapping = None
         self.type = type
-        self.k = 3 if self.type == ModelType.BOTH else 1
         if not hyperparameters:
             hyperparameters = read_hyperparameters('svm', self.type)
         self.num_of_iterations = hyperparameters['num_of_iterations']
         self.mini_batch_size = hyperparameters['mini_batch_size']
         self.learning_rate = hyperparameters['learning_rate']
+        self.regularization_type = hyperparameters['regularization_type']
         self.cost_function_type = hyperparameters['cost_function_type']
         self.C = hyperparameters['C']
 
@@ -36,12 +37,16 @@ class SupportVectorMachine:
         L = np.maximum(0, distance) # num_of_classes (1 in binary case) x mini_batch_size
         if self.cost_function_type == 'L2':
             L = L**2
-        J = self.C * np.sum(L) / Y.shape[0] + np.sum(self.W**2) / 2
+        if self.regularization_type == 'L1':
+            J = self.C * np.sum(L) / Y.shape[0] + np.sum(self.W)
+        elif self.regularization_type == 'L2':
+            J = self.C * np.sum(L) / Y.shape[0] + np.sum(self.W**2) / 2
         return distance, J
 
     def compute(self, data):
         X, Y = self.split_data_input_output(data)
-        Y = Y * 2 - 1# --------------------------------------------------------------------------------------------------------------------------------------------------
+        # Output is 0 and 1 and SVM classes are -1 and 1
+        Y = Y * 2 - 1
         # Adding ones as first element in every row for future multiplication with w0 (bias term)
         ones_bias_term = np.ones([X.shape[0], 1])
         X = np.hstack((ones_bias_term, X)) # mini_batch_size x 1(one) + num_of_features
@@ -51,7 +56,10 @@ class SupportVectorMachine:
 
     def update_parameters(self, X, Y, D):
         M = np.array(D > 0, dtype=int).transpose() # mini_batch_size x 1
-        dJ = -self.C * np.dot(Y.transpose(), X * M) + self.W
+        if self.regularization_type == 'L1':
+            dJ = -self.C * np.dot(Y.transpose(), X * M) + 1
+        elif self.regularization_type == 'L2':
+            dJ = -self.C * np.dot(Y.transpose(), X * M) + self.W
         self.W -= self.learning_rate * dJ
 
     def train_mini_batch(self, data, mini_batch_index):
@@ -91,8 +99,8 @@ class SupportVectorMachine:
         ones_bias_term = np.ones([X.shape[0], 1])
         X = np.hstack((ones_bias_term, X)) # mini_batch_size x 1(one) + num_of_features
         H = self.calculate_hypothesis(X)
-        H[H>=0] = 1
-        H[H<0] = 0
+        # H[H>=0] = 1
+        # H[H<0] = 0
         return H
 
 
@@ -114,7 +122,29 @@ class SupportVectorMachineCombined:
                len(df_test[df_test['prediction'] == df_test[df_test.columns[-2]]])/len(df_test)*100.0
 
     def compute(self, review):
-        if self.regression_category.predict(review):
-            return self.regression_sentiment.predict(review) + 1
+        if self.regression_category.predict(review) >= 0:
+            return int(self.regression_sentiment.predict(review) >= 0) + 1
         else:
             return 0
+
+
+class SupportVectorMachineOneVsRest:
+    def __init__(self) -> None:
+        self.svm_zero = SupportVectorMachine(ModelType.SVM_ZERO) # Preraditi podatke tako 0 odgovara -1, a 1 i 2 odgovaraju 1
+        self.svm_one = SupportVectorMachine(ModelType.SVM_ONE) # Preraditi podatke tako 1 odgovara -1, a 0 i 2 odgovaraju 1
+        self.svm_two = SupportVectorMachine(ModelType.SVM_TWO) # Preraditi podatke tako 2 odgovara -1, a 0 i 1 odgovaraju 1
+        # Onaj model koji vrati najmanju razdaljinu od 0 prema -1 je pobednik
+
+    def train(self, train_input_data, train_output_data, validation_input_data, validation_output_data):
+        self.svm_zero.train(train_input_data, train_output_data, validation_input_data, validation_output_data)
+        self.svm_one.train(train_input_data, train_output_data, validation_input_data, validation_output_data)
+        self.svm_two.train(train_input_data, train_output_data, validation_input_data, validation_output_data)
+    
+    def test(self, input_data, output_data):
+        prediction = self.svm_zero.predict(input_data.hotel_review) # 1 x batch_size
+        prediction = np.vstack((prediction, self.svm_one.predict(input_data.hotel_review))) # 2 x batch_size
+        prediction = np.vstack((prediction, self.svm_two.predict(input_data.hotel_review))) # 3 x batch_size
+        prediction = np.argmin(prediction, axis=0)
+        df_test = pd.concat([input_data, output_data, pd.Series(prediction)], axis=1)
+        return len(df_test[df_test[df_test.columns[-1]] != df_test[df_test.columns[-2]]])/len(df_test), \
+               len(df_test[df_test[df_test.columns[-1]] == df_test[df_test.columns[-2]]])/len(df_test)*100.0

@@ -27,6 +27,7 @@
         "mini_batch_size": 32,
         "num_of_iterations": 100,
         "learning_rate": 0.01,
+        "regularization_type": "L2",
         "cost_function_type": "L2",
         "C": 2
       },
@@ -34,6 +35,7 @@
         "mini_batch_size": 32,
         "num_of_iterations": 100,
         "learning_rate": 0.01,
+        "regularization_type": "L2",
         "cost_function_type": "L2",
         "C": 2
       },
@@ -41,6 +43,31 @@
         "mini_batch_size": 32,
         "num_of_iterations": 100,
         "learning_rate": 0.01,
+        "regularization_type": "L2",
+        "cost_function_type": "L2",
+        "C": 2
+      },
+      "multi_svm_zero": {
+        "mini_batch_size": 32,
+        "num_of_iterations": 100,
+        "learning_rate": 0.01,
+        "regularization_type": "L2",
+        "cost_function_type": "L2",
+        "C": 2
+      },
+      "multi_svm_one": {
+        "mini_batch_size": 32,
+        "num_of_iterations": 100,
+        "learning_rate": 0.01,
+        "regularization_type": "L2",
+        "cost_function_type": "L2",
+        "C": 2
+      },
+      "multi_svm_two": {
+        "mini_batch_size": 32,
+        "num_of_iterations": 100,
+        "learning_rate": 0.01,
+        "regularization_type": "L2",
         "cost_function_type": "L2",
         "C": 2
       }

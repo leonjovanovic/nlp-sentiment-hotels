@@ -8,7 +8,9 @@ import os
 
 
 class LogisticRegression:
-    def __init__(self, type: ModelType, hyperparameters=None) -> None:
+    def __init__(self, type: int, hyperparameters=None) -> None:
+        if type > ModelType.BOTH:
+            raise Exception('Bad value for ModelType enum')
         self.W = None
         self.features_mapping = None
         self.type = type
