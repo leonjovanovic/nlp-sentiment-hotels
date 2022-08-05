@@ -1,5 +1,4 @@
 Small:
-    SVM One vs rest, should we have 3 hyperparameter or 1
+    Implement TF and IDF separately
 Big:
-    Preprocessing: Frequency, stop words, stemming....
     Annotation

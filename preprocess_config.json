@@ -1,0 +1,22 @@
+{
+  "params":
+  {
+    "preprocess_type": "bag_of_words",
+    "binary": "True",
+    "lowercase": "True",
+    "ngram": 1,
+    "stop_words": "True",
+    "freq_max": 1.0,
+    "freq_min": 0.0
+  },
+  "params_options":
+  {
+    "preprocess_type": ["bag_of_words", "tf_idf"],
+    "binary": ["True", "False"],
+    "lowercase": ["True", "False"],
+    "ngram": [1, 2, 3],
+    "stop_words": ["True", "False"],
+    "freq_max": 0.99,
+    "freq_min": 0.99
+  }
+}

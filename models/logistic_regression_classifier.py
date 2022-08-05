@@ -98,7 +98,7 @@ class LogisticRegression:
             for mini_batch_index in range(0, train_dataset.shape[0], self.mini_batch_size):
                 J_train = self.train_mini_batch(train_dataset, mini_batch_index)
                 J_validation, accuracy_val = self.test(validation_input_data, validation_output_data)
-            print(f'        It{iteration}: J_train = {J_train}, J_val = {J_validation}, Acc_val = {accuracy_val}')
+            #print(f'        It{iteration}: J_train = {J_train}, J_val = {J_validation}, Acc_val = {accuracy_val}')
 
     def test(self, input_data, output_data):
         data = prepare_dataset(input_data, output_data, self.type).to_numpy()

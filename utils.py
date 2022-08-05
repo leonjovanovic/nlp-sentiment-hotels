@@ -1,7 +1,5 @@
 import json
-import string
-import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import pandas as pd
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
@@ -23,24 +21,11 @@ class ModelType:
             return 'sentiment'
         elif value == 2:
             return 'both'
-        elif value == 3:
-            return 'multi_svm_zero'
-        elif value == 4:
-            return 'multi_svm_one'
-        elif value == 5:
-            return 'multi_svm_two'
+        elif value == 3 or value == 4 or value == 5:
+            return 'multi_svm'
         else:
             raise Exception('Bad value for ModelType enum')
 
-
-class PreprocessType:
-    BAG_OF_WORDS = 0
-    BAG_OF_WORDS_BINARY = 1
-    TF = 2
-    IDF = 3
-    TF_IDF = 4
-    BIGRAM = 5
-    TRIGRAM = 6
 
 def import_annotated_json() -> pd.DataFrame:
     df1 = pd.read_json(f'data/annotated_reviews_lang_1.json', orient='index')
@@ -63,26 +48,41 @@ def import_annotated_json() -> pd.DataFrame:
     return df
 
 
-def bag_of_words(df: pd.Series, vocabulary=None, binary=False) -> pd.DataFrame:
-    vectorizer = CountVectorizer(vocabulary=vocabulary, binary=binary)
-    if vocabulary is None:
-        return pd.DataFrame(vectorizer.fit_transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vectorizer.vocabulary_
+def bag_of_words(df: pd.Series, vectorizer, params: dict) -> pd.DataFrame:
+    if vectorizer is None:
+        stop_words = read_stop_words() if params['stop_words'] else None
+        vectorizer = CountVectorizer(binary=params['binary'], lowercase=params['lowercase'], stop_words=stop_words, ngram_range=(params['ngram'], params['ngram']), max_df=params['freq_max'], min_df=params['freq_min'])
+        return pd.DataFrame(vectorizer.fit_transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vectorizer
     else:
-        return pd.DataFrame(vectorizer.transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vocabulary
+        return pd.DataFrame(vectorizer.transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vectorizer
 
-def split_into_words(sentence):
-    vectorizer = CountVectorizer()
-    occurences = vectorizer.fit_transform([sentence]).toarray()
-    result = []
-    for word, num_of_occ in zip(vectorizer.get_feature_names_out(), occurences[0]):
-        result += [word] * num_of_occ
-    return result
+
+def tf_idf(df: pd.Series, vectorizer, params: dict) -> pd.DataFrame:
+    stop_words = read_stop_words() if params['stop_words'] else None
+    if vectorizer is None:
+        vectorizer = TfidfVectorizer(binary=params['binary'], lowercase=params['lowercase'], stop_words=stop_words, ngram_range=(params['ngram'], params['ngram']), max_df=params['freq_max'], min_df=params['freq_min'])
+        return pd.DataFrame(vectorizer.fit_transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vectorizer
+    else:
+        return pd.DataFrame(vectorizer.transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vectorizer
+
+
+def split_into_words(series: pd.Series, params: dict):
+    stop_words = read_stop_words() if params['stop_words'] else None
+    vectorizer = CountVectorizer(binary=params['binary'], lowercase=params['lowercase'], stop_words=stop_words, ngram_range=(params['ngram'], params['ngram']), max_df=params['freq_max'], min_df=params['freq_min'])
+    occurences = pd.DataFrame(vectorizer.fit_transform(series).toarray())
+    def compute(x):
+        result = []
+        for word, num_of_occ in zip(vectorizer.get_feature_names_out(), x):
+            result += [word] * num_of_occ
+        return result
+    return pd.DataFrame(occurences.apply(lambda x: compute(x), axis=1))
 
 
 def shuffle_dataset(df: pd.DataFrame, random_state=0) -> pd.DataFrame:
     df = shuffle(df, random_state=random_state)
     df.reset_index(drop=True, inplace=True)
     return df
+
 
 def split_dataset(df: pd.DataFrame, train_percent = 0.8, validation_split = True) -> pd.DataFrame:
     train_set, val_test = train_test_split(df, test_size=1-train_percent, shuffle=True, random_state=1)
@@ -114,3 +114,21 @@ def read_hyperparameters(model_name, type):
         data = json.load(f)
         hypers = data[model_name]
         return hypers[ModelType.map_value_to_string(type)]
+
+
+def read_preprocess_parameters() -> dict:
+    with open('preprocess_config.json', 'r') as f:
+        data = json.load(f)
+        params = data['params']
+        for key, value in params.items():
+            if value == "True":
+                params[key] = True
+            if value == "False":
+                params[key] = False
+        return params
+
+
+def read_stop_words() -> list:
+    with open('stop_words.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        return data['stop_words']
