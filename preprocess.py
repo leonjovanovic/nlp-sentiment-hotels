@@ -22,7 +22,7 @@ def preprocess(train_input: pd.Series, test_or_val_input: pd.Series, is_bayes: b
             test_or_val_input = split_into_words(test_or_val_input, params)
         else:
             test_or_val_input, _ = bag_of_words(test_or_val_input, vectorizer, params)
-    elif params['preprocess_type'] == 'tf_idf':
+    elif params['preprocess_type'] == 'tf_idf' or params['preprocess_type'] == 'tf' or params['preprocess_type'] == 'idf':
         train_input, vectorizer = tf_idf(train_input, None, params)
         test_or_val_input, _ = tf_idf(test_or_val_input, vectorizer, params)
     else: 

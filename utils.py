@@ -60,7 +60,16 @@ def bag_of_words(df: pd.Series, vectorizer, params: dict) -> pd.DataFrame:
 def tf_idf(df: pd.Series, vectorizer, params: dict) -> pd.DataFrame:
     stop_words = read_stop_words() if params['stop_words'] else None
     if vectorizer is None:
-        vectorizer = TfidfVectorizer(binary=params['binary'], lowercase=params['lowercase'], stop_words=stop_words, ngram_range=(params['ngram'], params['ngram']), max_df=params['freq_max'], min_df=params['freq_min'])
+        if params['preprocess_type'] == 'tf':
+            vectorizer = TfidfVectorizer(binary=params['binary'], lowercase=params['lowercase'], stop_words=stop_words, ngram_range=(params['ngram'], params['ngram']), max_df=params['freq_max'], min_df=params['freq_min'], use_idf=False)
+        elif params['preprocess_type'] == 'idf':
+            vectorizer = TfidfVectorizer(binary=params['binary'], lowercase=params['lowercase'], stop_words=stop_words, ngram_range=(params['ngram'], params['ngram']), max_df=params['freq_max'], min_df=params['freq_min'])
+            vectorizer.fit(df)
+            idf = vectorizer.idf_
+            idf_vocabulary = dict(zip(vectorizer.get_feature_names_out(), idf))
+            
+        elif params['preprocess_type'] == 'tf_idf':
+            vectorizer = TfidfVectorizer(binary=params['binary'], lowercase=params['lowercase'], stop_words=stop_words, ngram_range=(params['ngram'], params['ngram']), max_df=params['freq_max'], min_df=params['freq_min'])
         return pd.DataFrame(vectorizer.fit_transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vectorizer
     else:
         return pd.DataFrame(vectorizer.transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vectorizer

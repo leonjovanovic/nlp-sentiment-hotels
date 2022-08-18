@@ -59,7 +59,7 @@ class LogisticRegression:
             J = -np.mean(L)# 1 x 1
         else:
             L = -np.log(H) # num_of_classes x mini_batch_size
-            one_hot_Y = np.eye(self.k)[np.array(Y).reshape(-1)] # mini_batch_size x num_of_classes
+            one_hot_Y = np.eye(self.k)[np.array(Y).reshape(-1).astype(int)] # mini_batch_size x num_of_classes
             J = np.mean(np.sum(one_hot_Y * L.transpose(), axis=1))# 1 x 1
         return J + self.regularization('cost_function')
 
@@ -76,7 +76,7 @@ class LogisticRegression:
         if self.type != ModelType.BOTH:
             dJ = np.dot((H - Y), X)  # 1 x num_of_features + 1
         else:
-            one_hot_Y = np.eye(self.k)[np.array(Y).reshape(-1)] # mini_batch_size x num_of_classes
+            one_hot_Y = np.eye(self.k)[np.array(Y).reshape(-1).astype(int)] # mini_batch_size x num_of_classes
             dJ = -np.dot((one_hot_Y - H.transpose()).transpose(), X) / X.shape[0]  # num_of_classes x num_of_features + 1
         self.W -= (self.learning_rate / X.shape[0]) * (dJ  + self.regularization('derivative'))
 
