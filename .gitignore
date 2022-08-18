@@ -3,3 +3,4 @@ todo.txt
 *.xml
 *.iml
 *.pyc
+annotating_data.py

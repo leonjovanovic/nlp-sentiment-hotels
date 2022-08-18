@@ -25,6 +25,16 @@ class ModelType:
             return 'multi_svm'
         else:
             raise Exception('Bad value for ModelType enum')
+    
+def map_string_to_model_type(type: str) -> ModelType:
+    if type == 'CATEGORY':
+        return ModelType.CATEGORY
+    elif type == 'SENTIMENT':
+        return ModelType.SENTIMENT
+    elif type == 'BOTH':
+        return ModelType.BOTH
+    else:
+        raise Exception('Unexpected ModelType')
 
 
 def import_annotated_json() -> pd.DataFrame:
@@ -62,13 +72,7 @@ def tf_idf(df: pd.Series, vectorizer, params: dict) -> pd.DataFrame:
     if vectorizer is None:
         if params['preprocess_type'] == 'tf':
             vectorizer = TfidfVectorizer(binary=params['binary'], lowercase=params['lowercase'], stop_words=stop_words, ngram_range=(params['ngram'], params['ngram']), max_df=params['freq_max'], min_df=params['freq_min'], use_idf=False)
-        elif params['preprocess_type'] == 'idf':
-            vectorizer = TfidfVectorizer(binary=params['binary'], lowercase=params['lowercase'], stop_words=stop_words, ngram_range=(params['ngram'], params['ngram']), max_df=params['freq_max'], min_df=params['freq_min'])
-            vectorizer.fit(df)
-            idf = vectorizer.idf_
-            idf_vocabulary = dict(zip(vectorizer.get_feature_names_out(), idf))
-            
-        elif params['preprocess_type'] == 'tf_idf':
+        else:
             vectorizer = TfidfVectorizer(binary=params['binary'], lowercase=params['lowercase'], stop_words=stop_words, ngram_range=(params['ngram'], params['ngram']), max_df=params['freq_max'], min_df=params['freq_min'])
         return pd.DataFrame(vectorizer.fit_transform(df).toarray(), columns=vectorizer.get_feature_names_out()), vectorizer
     else:
@@ -84,7 +88,7 @@ def split_into_words(series: pd.Series, params: dict):
         for word, num_of_occ in zip(vectorizer.get_feature_names_out(), x):
             result += [word] * num_of_occ
         return result
-    return pd.DataFrame(occurences.apply(lambda x: compute(x), axis=1))
+    return pd.DataFrame(occurences.apply(lambda x: compute(x), axis=1), columns=['hotel_review'])
 
 
 def shuffle_dataset(df: pd.DataFrame, random_state=0) -> pd.DataFrame:
@@ -123,6 +127,13 @@ def read_hyperparameters(model_name, type):
         data = json.load(f)
         hypers = data[model_name]
         return hypers[ModelType.map_value_to_string(type)]
+
+
+def read_tuning_hyperparameters(model_name, type):
+    with open('tuning_hyperparameters.json', 'r') as f:
+        data = json.load(f)
+        hypers = data[model_name]
+        return hypers[type]
 
 
 def read_preprocess_parameters() -> dict:

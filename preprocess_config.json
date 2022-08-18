@@ -1,7 +1,7 @@
 {
   "params":
   {
-    "preprocess_type": "idf",
+    "preprocess_type": "bag_of_words",
     "binary": "False",
     "lowercase": "True",
     "ngram": 1,
@@ -11,7 +11,7 @@
   },
   "params_options":
   {
-    "preprocess_type": ["bag_of_words", "tf_idf", "tf", "idf"],
+    "preprocess_type": ["bag_of_words", "tf_idf", "tf"],
     "binary": ["True", "False"],
     "lowercase": ["True", "False"],
     "ngram": [1, 2, 3],
