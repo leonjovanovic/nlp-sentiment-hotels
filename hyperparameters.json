@@ -2,54 +2,54 @@
     "logistic_regression": {
       "category": {
         "mini_batch_size": 16,
-        "num_of_iterations": 100,
+        "num_of_iterations": 50,
         "learning_rate": 0.01,
         "regularization_type": "L2",
         "lambda":   0.01
       },
       "sentiment": {
         "mini_batch_size": 16,
-        "num_of_iterations": 100,
+        "num_of_iterations": 50,
         "learning_rate": 0.01,
         "regularization_type": "L2",
         "lambda":   0.01
       },
       "both": {
         "mini_batch_size": 16,
-        "num_of_iterations": 500,
-        "learning_rate": 0.05,
+        "num_of_iterations": 100,
+        "learning_rate": 0.5,
         "regularization_type": "L2",
         "lambda":   0.0001
       }
     },
     "svm": {
       "category": {
-        "mini_batch_size": 32,
-        "num_of_iterations": 100,
+        "mini_batch_size": 64,
+        "num_of_iterations": 50,
         "learning_rate": 0.01,
         "regularization_type": "L2",
         "cost_function_type": "L2",
         "C": 2
       },
       "sentiment": {
-        "mini_batch_size": 32,
-        "num_of_iterations": 100,
+        "mini_batch_size": 64,
+        "num_of_iterations": 50,
         "learning_rate": 0.01,
         "regularization_type": "L2",
         "cost_function_type": "L2",
         "C": 2
       },
       "both": {
-        "mini_batch_size": 32,
-        "num_of_iterations": 100,
+        "mini_batch_size": 64,
+        "num_of_iterations": 50,
         "learning_rate": 0.01,
         "regularization_type": "L2",
         "cost_function_type": "L2",
         "C": 2
       },
       "multi_svm": {
-        "mini_batch_size": 32,
-        "num_of_iterations": 100,
+        "mini_batch_size": 64,
+        "num_of_iterations": 50,
         "learning_rate": 0.01,
         "regularization_type": "L2",
         "cost_function_type": "L2",

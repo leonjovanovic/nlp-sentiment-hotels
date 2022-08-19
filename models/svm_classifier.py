@@ -70,7 +70,7 @@ class SupportVectorMachine:
             for mini_batch_index in range(0, train_dataset.shape[0], self.mini_batch_size):
                 J_train = self.train_mini_batch(train_dataset, mini_batch_index)
                 J_validation, accuracy_val = self.test(validation_input_data, validation_output_data)
-            #print(f'        It{iteration}: J_train = {J_train}, J_val = {J_validation}, Acc_val = {accuracy_val}')
+            # print(f'        It{iteration}: J_train = {J_train}, J_val = {J_validation}, Acc_val = {accuracy_val}')
 
     def test(self, input_data, output_data):
         data = prepare_dataset(input_data, output_data, self.type).to_numpy()
@@ -91,10 +91,10 @@ class SupportVectorMachine:
 
 
 class SupportVectorMachineCombined:
-    def __init__(self):
+    def __init__(self, hyperparameters=None):
         # should hyperparameters be passed to the constructor or should it use the best hyperparams found for each model?
-        self.svm_category = SupportVectorMachine(ModelType.CATEGORY)
-        self.svm_sentiment = SupportVectorMachine(ModelType.SENTIMENT)
+        self.svm_category = SupportVectorMachine(ModelType.CATEGORY, hyperparameters)
+        self.svm_sentiment = SupportVectorMachine(ModelType.SENTIMENT, hyperparameters)
 
     def train(self, train_input_data, train_output_data, validation_input_data, validation_output_data):
         self.svm_category.train(train_input_data, train_output_data, validation_input_data, validation_output_data)
@@ -114,10 +114,10 @@ class SupportVectorMachineCombined:
 
 
 class SupportVectorMachineOneVsRest:
-    def __init__(self) -> None:
-        self.svm_zero = SupportVectorMachine(ModelType.SVM_ZERO) # Preraditi podatke tako 0 odgovara -1, a 1 i 2 odgovaraju 1
-        self.svm_one = SupportVectorMachine(ModelType.SVM_ONE) # Preraditi podatke tako 1 odgovara -1, a 0 i 2 odgovaraju 1
-        self.svm_two = SupportVectorMachine(ModelType.SVM_TWO) # Preraditi podatke tako 2 odgovara -1, a 0 i 1 odgovaraju 1
+    def __init__(self, hyperparameters=None) -> None:
+        self.svm_zero = SupportVectorMachine(ModelType.SVM_ZERO, hyperparameters) # Preraditi podatke tako 0 odgovara -1, a 1 i 2 odgovaraju 1
+        self.svm_one = SupportVectorMachine(ModelType.SVM_ONE, hyperparameters) # Preraditi podatke tako 1 odgovara -1, a 0 i 2 odgovaraju 1
+        self.svm_two = SupportVectorMachine(ModelType.SVM_TWO, hyperparameters) # Preraditi podatke tako 2 odgovara -1, a 0 i 1 odgovaraju 1
         # Onaj model koji vrati najmanju razdaljinu od 0 prema -1 je pobednik
 
     def train(self, train_input_data, train_output_data, validation_input_data, validation_output_data):
