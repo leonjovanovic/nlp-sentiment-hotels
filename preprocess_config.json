@@ -16,7 +16,7 @@
     "lowercase": ["True", "False"],
     "ngram": [1, 2, 3],
     "stop_words": ["True", "False"],
-    "freq_max": 1.0,
-    "freq_min": 1
+    "freq_max": [0.5, 1.0],
+    "freq_min": [0.5, 1]
   }
 }
