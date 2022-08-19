@@ -77,7 +77,7 @@ class SupportVectorMachine:
         _, Y, H, distance, J = self.compute(data)
         H[H>=0] = 1
         H[H<0] = -1
-        accuracy = (np.count_nonzero(H == Y)) / Y.shape[0]
+        accuracy = (np.count_nonzero(H == Y)) / Y.shape[0] *100.0
         return J, accuracy
     
     def predict(self, X):
