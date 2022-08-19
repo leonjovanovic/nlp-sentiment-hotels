@@ -1,6 +1,4 @@
 Big:
-    Annotation
     Documentation
-    Pipeline for tuning hyperparameters
     check if we did everything
     add different hyperparams.json for every category

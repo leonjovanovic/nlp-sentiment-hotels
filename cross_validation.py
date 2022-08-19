@@ -11,7 +11,7 @@ k_fold = 10
 def cross_validation(input_data, output_data, model, preprocess_params=None):
     J_values = []
     Accuracy_values = []
-    for i in range(k_fold):
+    for i in tqdm(range(k_fold)):
         train_input, test_or_val_input = split_dataset_into_two(input_data, i, k_fold)
         train_output, test_or_val_output = split_dataset_into_two(output_data, i, k_fold)
         
@@ -29,7 +29,7 @@ def cross_validation(input_data, output_data, model, preprocess_params=None):
 def nested_cross_validation(input_data, output_data, model, preprocess_params=None):
     J_values = []
     Accuracy_values = []
-    for i in tqdm(range(k_fold)):
+    for i in range(k_fold):
         train_input, test_input = split_dataset_into_two(input_data, i, k_fold)
         train_output, test_output = split_dataset_into_two(output_data, i, k_fold)
         J, accuracy = cross_validation(train_input, train_output, model, preprocess_params)
