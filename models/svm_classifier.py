@@ -3,7 +3,7 @@ import pandas as pd
 
 from preprocess import prepare_dataset
 from utils import ModelType, read_hyperparameters
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics import f1_score
 
 
 class SupportVectorMachine:
@@ -77,8 +77,7 @@ class SupportVectorMachine:
         _, Y, H, distance, J = self.compute(data)
         H[H>=0] = 1
         H[H<0] = -1
-        accuracy = (np.count_nonzero(H == Y)) / Y.shape[0] *100.0
-        return J, accuracy
+        return J, f1_score(Y, H, average='macro')
     
     def predict(self, X):
         # Adding ones as first element in every row for future multiplication with w0 (bias term)
@@ -104,7 +103,7 @@ class SupportVectorMachineCombined:
         prediction = input_data.apply(lambda x: self.compute(pd.DataFrame(x).transpose()), axis=1)
         df_test = pd.concat([output_data, prediction], axis=1)
         return len(df_test[df_test[df_test.columns[-1]] != df_test[df_test.columns[-2]]])/len(df_test), \
-               len(df_test[df_test[df_test.columns[-1]] == df_test[df_test.columns[-2]]])/len(df_test)*100.0
+            f1_score(df_test[df_test.columns[-2]], df_test[df_test.columns[-1]], average='macro')
 
     def compute(self, review):
         if self.svm_category.predict(review) >= 0:
@@ -132,4 +131,4 @@ class SupportVectorMachineOneVsRest:
         prediction = np.argmin(prediction, axis=0)
         df_test = pd.concat([output_data, pd.Series(prediction)], axis=1)
         return len(df_test[df_test[df_test.columns[-1]] != df_test[df_test.columns[-2]]])/len(df_test), \
-               len(df_test[df_test[df_test.columns[-1]] == df_test[df_test.columns[-2]]])/len(df_test)*100.0
+            f1_score(df_test[df_test.columns[-2]], df_test[df_test.columns[-1]], average='macro')

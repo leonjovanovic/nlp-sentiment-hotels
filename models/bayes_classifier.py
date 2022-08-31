@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 from math import log
 from preprocess import prepare_dataset
-from utils import ModelType, split_into_words
+from utils import ModelType
+from sklearn.metrics import f1_score
 
 
 class NaiveBayes:
@@ -58,7 +59,7 @@ class NaiveBayes:
         df_test = prepare_dataset(input_data, output_data, self.type)
         df_test['prediction'] = pd.DataFrame(df_test.apply(lambda x: self.compute(x[0]), axis=1))
         return len(df_test[df_test['prediction'] != df_test[df_test.columns[-2]]])/len(df_test), \
-               len(df_test[df_test['prediction'] == df_test[df_test.columns[-2]]])/len(df_test)*100.0
+            f1_score(df_test[df_test.columns[-2]], df_test['prediction'], average='macro')
 
 
 class NaiveBayesCombined:
@@ -74,7 +75,7 @@ class NaiveBayesCombined:
         prediction = input_data.apply(lambda x: self.compute(x[0]), axis=1)
         df_test = pd.concat([output_data, prediction], axis=1)
         return len(df_test[df_test[df_test.columns[-1]] != df_test[df_test.columns[-2]]])/len(df_test), \
-               len(df_test[df_test[df_test.columns[-1]] == df_test[df_test.columns[-2]]])/len(df_test)*100.0
+            f1_score(df_test[df_test.columns[-2]], df_test[df_test.columns[-1]], average='macro')
 
     def compute(self, review):
         if self.bayes_category.compute(review):

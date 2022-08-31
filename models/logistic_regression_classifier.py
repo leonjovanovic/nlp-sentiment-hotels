@@ -2,9 +2,7 @@ import numpy as np
 import pandas as pd
 from preprocess import prepare_dataset
 from utils import ModelType, read_hyperparameters
-from sklearn.feature_extraction.text import CountVectorizer
-import json
-import os
+from sklearn.metrics import f1_score
 
 
 class LogisticRegression:
@@ -108,8 +106,7 @@ class LogisticRegression:
         else:
             H[H>=0.5] = 1
             H[H<0.5] = 0
-        accuracy = (np.count_nonzero(H == Y)) / Y.shape[0]
-        return J, accuracy
+        return J, f1_score(Y, H, average='macro')
     
     def predict(self, X):
         # Adding ones as first element in every row for future multiplication with w0 (bias term)
@@ -137,7 +134,7 @@ class LogisticRegressionCombined:
         prediction = input_data.apply(lambda x: self.compute(pd.DataFrame(x).transpose()), axis=1)
         df_test = pd.concat([output_data, prediction], axis=1)
         return len(df_test[df_test[df_test.columns[-1]] != df_test[df_test.columns[-2]]])/len(df_test), \
-               len(df_test[df_test[df_test.columns[-1]] == df_test[df_test.columns[-2]]])/len(df_test)*100.0
+            f1_score(df_test[df_test.columns[-2]], df_test[df_test.columns[-1]], average='macro')
 
     def compute(self, review):
         if self.regression_category.predict(review):
