@@ -77,7 +77,7 @@ class SupportVectorMachine:
         _, Y, H, distance, J = self.compute(data)
         H[H>=0] = 1
         H[H<0] = -1
-        return J, f1_score(Y, H, average='macro')
+        return J, f1_score(Y, H.squeeze(), average='macro')
     
     def predict(self, X):
         # Adding ones as first element in every row for future multiplication with w0 (bias term)
